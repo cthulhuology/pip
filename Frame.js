@@ -118,7 +118,7 @@ Frame = function(method) {
 Frame.x = 100
 Frame.y = 100
 Frame.inputs = ['x','y','z' ]
-Frame.outputs = [ 'lexengine' ]
+Frame.outputs = [ 'transform' ]
 Frame.send('show')
 
 Frame.send('new','Frame2',300,100,['foo'],['bar']).send('show')
