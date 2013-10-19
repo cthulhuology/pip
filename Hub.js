@@ -1,5 +1,7 @@
 // Hub.js
 //
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
+//
 // The hub routes messages to objects that subscribe to a selector
 // the only two resevered selectors are 'subscribe' an 'unsubscribe'
 // which refer directly to the behavior of the Hub itself.

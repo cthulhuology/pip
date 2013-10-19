@@ -1,4 +1,6 @@
 // Screen.js
+//
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
 // 
 // Screen and Canvas wrap the Drawing context and HTML element respectively 
 // We extend some of the behavior to fill in gaps in the API
