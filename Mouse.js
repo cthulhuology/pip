@@ -1,5 +1,7 @@
 // Mouse.js
 // 
+// © 2012,2013 David J Goehrig
+// 
 // Manages mouse events, requires Hub.js & Screen.js beloaded first
 // 
 
