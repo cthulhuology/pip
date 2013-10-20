@@ -194,5 +194,3 @@ Frame = function(method) {
 	}
 	return this
 }
-
-
