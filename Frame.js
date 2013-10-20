@@ -37,7 +37,7 @@ Frame = function(method) {
 				this.outputs[i].y = y+i*dy + dy	// of the output tab
 			}
 			Screen.lineTo(this.outputs[i].x,this.outputs[i].y-5) // 5 == radius
-			var dx = this.outputs[i].y > this.outputs[i].ty ? 2.5 : - 2.5
+			var dx = this.outputs[i].y > this.outputs[i].ty ? 2.5 :  this.outputs[i].y < this.outputs[i].ty ? - 2.5 : 0
 			Screen.bezierCurveTo(
 				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
 				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
@@ -177,7 +177,7 @@ Frame = function(method) {
 		var inputs = message[4]
 		var outputs = message[5]
 		var src = this.toString()
-		var frame = Function.prototype.constructor.apply(Function.prototype,[ "method", src.substr(20, src.length - 21)])
+		var frame = Frame.clone()
 		frame.color = color
 		frame.x = x
 		frame.y = y

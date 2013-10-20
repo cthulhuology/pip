@@ -21,6 +21,13 @@ Function.prototype.resend = function(message) {
 	return this.apply(this,message)
 }
 
+Function.prototype.clone = function() {
+	var src = this.toString()
+	var definition = src.substr(0,src.indexOf("{")).match(/\(([^)]+)\)/)[1].split(/,\s*/)
+	definition.push(src.substr(1+src.indexOf("{"), src.lastIndexOf("}")-src.indexOf("{")-1))
+	return Function.prototype.constructor.apply(this, definition)
+}
+
 // Resends messages to all of the attached objects, allows a basic level of routing
 Hub = function(method) {
 	var message = Array.prototype.slice.apply(arguments,[0])
