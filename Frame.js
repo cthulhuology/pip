@@ -48,25 +48,38 @@ Frame = function(method) {
 				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
 				this.outputs[i].x,this.outputs[i].y+5
 			)
-			var offset = Screen.measureText(outputs[i].text).width
-			Screen.fillText(outputs[i].text, (x + width) - offset - 10,y+i*dy+dy+3)
 		}
 		Screen.lineTo(x+width,y+height)
 		Screen.lineTo(x,y+height)
 		for (var i = inputs.length; i > 0; ) {
 			--i;
 			var dy = height / (inputs.length + 1)
+			this.inputs[i].x = x
+			this.inputs[i].y = y+i*dy+dy
 			Screen.lineTo(x,y+i*dy +dy + 5)
 			Screen.arc(x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
-			Screen.fillText(inputs[i].text,x+10,y+i*dy+dy+3)
 		}
 		Screen.lineTo(x,y)
-		Screen.strokeStyle = "black"
 		Screen.closePath()
-		Screen.stroke()
 		Screen.fillStyle = this.color;
 		Screen.fill()
+		Screen.strokeStyle = "black"
+		Screen.stroke()
 		Screen.restore()
+		Screen.save()
+		Screen.fillStyle = "black"
+		for (var i = inputs.length; i > 0; ) {
+			--i;
+			var dy = height / (inputs.length + 1)
+			Screen.fillText(inputs[i].text,x+10,y+i*dy+dy+3)
+		}
+		for (var i = 0; i < outputs.length; ++i) {
+			var dy = height / (outputs.length + 1)
+			var offset = Screen.measureText(outputs[i].text).width
+			Screen.fillText(outputs[i].text, (x + width) - offset - 10,y+i*dy+dy+3)
+		}
+		Screen.restore()
+
 		this.drawing = false
 		return this
 
@@ -76,7 +89,7 @@ Frame = function(method) {
 		for (var i = 0; i < this.outputs.length; ++i) {
 			var dx =  (x - this.outputs[i].tx)
 			var dy =  (y - this.outputs[i].ty)
-			if ( dx*dx + dy*dy < 16 ) {	// mouse within 6 of the center
+			if ( dx*dx + dy*dy < 25 ) {	// mouse within 5 of the center
 				this.dragging = this.outputs[i]
 				this.dragging.tx = x
 				this.dragging.ty = y
@@ -96,6 +109,7 @@ Frame = function(method) {
 		return this
 
 	case 'up':
+		if (this.dragging && this.dragging.target && ! this.dragging.target.target) this.dragging.target = false
 		this.dragging = false
 		Hub('subscribe','down',this)	// watch for down events
 		Hub('unsubscribe','up',this)	
@@ -108,10 +122,42 @@ Frame = function(method) {
 		if (this.dragging) {
 			this.dragging.tx = x
 			this.dragging.ty = y
+			for (var i = 0; i < Frame.instances.length; ++i) {
+				for (var j = 0; j < Frame.instances[i].inputs.length; ++j) {
+					var tdx = (x - Frame.instances[i].inputs[j].x)
+					var tdy = (y - Frame.instances[i].inputs[j].y)
+					if (tdx*tdx + tdy*tdy < 225 ) { 
+						if (this.dragging.target) {
+							this.dragging.target.target = false
+							break;
+						}
+						Screen.save()
+						Screen.strokeStyle = "red"
+						Screen.circle(Frame.instances[i].inputs[j].x,Frame.instances[i].inputs[j],15)
+						Screen.stroke()
+						Screen.restore()
+						console.log("snapping to " + Frame.instances[i].inputs[j].text)
+						this.dragging.tx = Frame.instances[i].inputs[j].x
+						this.dragging.ty = Frame.instances[i].inputs[j].y
+						Frame.instances[i].inputs[j].target = this.dragging
+						this.dragging.target = Frame.instances[i].inputs[j]
+						this.send("up")
+					}
+				}
+			}
 			return this
 		}
 		this.x = x - this.dx
 		this.y = y - this.dy
+		var height = (Math.max(this.inputs.length,this.outputs.length) + 1) * 15
+		var dy = height / (this.inputs.length + 1)
+		for (var i = 0; i < this.inputs.length; ++i) {
+			if (this.inputs[i].target) {
+				this.inputs[i].target.tx = x - this.dx
+				this.inputs[i].target.ty = y - this.dy + dy*i + dy
+
+			}
+		}
 		return this
 
 	case 'show':
@@ -135,9 +181,11 @@ Frame = function(method) {
 		frame.x = x
 		frame.y = y
 		frame.inputs = []
-		for (var i = 0; i < inputs.length; ++i) frame.inputs.push({ text: inputs[i], x: 0, y: 0, tx: 0, ty: 0})
+		for (var i = 0; i < inputs.length; ++i) frame.inputs.push({ text: inputs[i], x: 0, y: 0, target: false})
 		frame.outputs = []
-		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0})
+		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
+		Frame.instances = Frame.instances ? Frame.instances : []
+		Frame.instances.push(frame)
 		return frame
 	
 	default:
@@ -147,6 +195,4 @@ Frame = function(method) {
 	return this
 }
 
-Frame1 = Frame.send('new','rgba(0,255,0,0.3)',100,100,['x','y','z'],['transform']).send('show') 
-Frame2 = Frame.send('new','rgba(255,0,0,0.4)',300,100,['foo'],['bar']).send('show')
 
