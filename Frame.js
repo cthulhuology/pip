@@ -69,6 +69,13 @@ Frame = function(method) {
 		Screen.restore()
 		Screen.save()
 		Screen.fillStyle = "black"
+		Screen.fillText(this.label, x, y - 5)
+		if (this.transform)  {
+			Screen.fillText("\u27f6", x + width/2 - 6, y + height/2 + 2)
+		}
+		if (this.filter)  {
+			Screen.fillText("\ud835\ude27", x + width/2 - 3, y + height/2 + 3)
+		}
 		for (var i = inputs.length; i > 0; ) {
 			--i;
 			var dy = height / (inputs.length + 1)
@@ -188,7 +195,15 @@ Frame = function(method) {
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
 		return frame
-	
+	case 'label':
+		this.label = message[1]
+		return this	
+	case 'filter':
+		this.filter = message[1]
+		return this
+	case 'transform':
+		this.transform = message[1]
+		return this
 	default:
 		console.log(this  + "received unknown message " + message)
 		// ignore the message

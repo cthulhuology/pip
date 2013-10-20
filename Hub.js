@@ -6,29 +6,8 @@
 // the only two resevered selectors are 'subscribe' an 'unsubscribe'
 // which refer directly to the behavior of the Hub itself.
 
-// Useful for converting arguments to an array
-Object.prototype.list = function() {
-	return Array.prototype.slice.apply(this,[0])
-}
-
-// We need to do this because invoking a function in a top level passes window as this
-Function.prototype.send = function() {
-	return this.apply(this,arguments.list())
-}
-
-// Send a list of arguments to a function to evaluate itself with
-Function.prototype.resend = function(message) {
-	return this.apply(this,message)
-}
-
-Function.prototype.clone = function() {
-	var src = this.toString()
-	var definition = src.substr(0,src.indexOf("{")).match(/\(([^)]+)\)/)[1].split(/,\s*/)
-	definition.push(src.substr(1+src.indexOf("{"), src.lastIndexOf("}")-src.indexOf("{")-1))
-	return Function.prototype.constructor.apply(this, definition)
-}
-
 // Resends messages to all of the attached objects, allows a basic level of routing
+//
 Hub = function(method) {
 	var message = Array.prototype.slice.apply(arguments,[0])
 	switch (method) {
