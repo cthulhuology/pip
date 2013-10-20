@@ -37,15 +37,16 @@ Frame = function(method) {
 				this.outputs[i].y = y+i*dy + dy	// of the output tab
 			}
 			Screen.lineTo(this.outputs[i].x,this.outputs[i].y-5) // 5 == radius
+			var dx = this.outputs[i].y > this.outputs[i].ty ? 2.5 : - 2.5
 			Screen.bezierCurveTo(
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
+				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
+				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
 				this.outputs[i].tx,this.outputs[i].ty-5
 			)
 			Screen.arc(this.outputs[i].tx,this.outputs[i].ty, 5, -0.5 * Math.PI, 0.5 * Math.PI)
 			Screen.bezierCurveTo(
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty+5,
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
+				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty+5,
+				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
 				this.outputs[i].x,this.outputs[i].y+5
 			)
 		}
