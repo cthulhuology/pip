@@ -17,6 +17,7 @@ Frame = function(method) {
 		var outputs = this.outputs
 		var height = (Math.max(inputs.length,outputs.length) + 1) * 15
 		var width = 0	
+		Screen.font = '12px Arial'
 		for (var i = 0; i < inputs.length; ++i) width = Math.max(width, Screen.measureText(inputs[i].text).width * 2)
 		for (var i = 0; i < outputs.length; ++i) width = Math.max(width, Screen.measureText(outputs[i].text).width * 2)
 		width += 40 
@@ -37,15 +38,16 @@ Frame = function(method) {
 				this.outputs[i].y = y+i*dy + dy	// of the output tab
 			}
 			Screen.lineTo(this.outputs[i].x,this.outputs[i].y-5) // 5 == radius
+			var dx = this.outputs[i].y > this.outputs[i].ty ? 2.5 :  this.outputs[i].y < this.outputs[i].ty ? - 2.5 : 0
 			Screen.bezierCurveTo(
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
+				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
+				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
 				this.outputs[i].tx,this.outputs[i].ty-5
 			)
 			Screen.arc(this.outputs[i].tx,this.outputs[i].ty, 5, -0.5 * Math.PI, 0.5 * Math.PI)
 			Screen.bezierCurveTo(
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty+5,
-				this.outputs[i].x + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
+				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty+5,
+				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
 				this.outputs[i].x,this.outputs[i].y+5
 			)
 		}
@@ -63,11 +65,19 @@ Frame = function(method) {
 		Screen.closePath()
 		Screen.fillStyle = this.color;
 		Screen.fill()
-		Screen.strokeStyle = "black"
+		Screen.strokeStyle = Colors.Text.dark;
 		Screen.stroke()
 		Screen.restore()
 		Screen.save()
-		Screen.fillStyle = "black"
+		Screen.fillStyle = Colors.Text.dark;
+		Screen.fillText(this.label, x, y - 5)
+		Screen.fillStyle = Colors.Text.light;
+		if (this.transform)  {
+			Screen.fillText("\u27f6", x + width/2 - 6, y + height/2 + 2)
+		}
+		if (this.filter)  {
+			Screen.fillText("\ud835\ude27", x + width/2 - 3, y + height/2 + 3)
+		}
 		for (var i = inputs.length; i > 0; ) {
 			--i;
 			var dy = height / (inputs.length + 1)
@@ -176,7 +186,7 @@ Frame = function(method) {
 		var inputs = message[4]
 		var outputs = message[5]
 		var src = this.toString()
-		var frame = Function.prototype.constructor.apply(Function.prototype,[ "method", src.substr(20, src.length - 21)])
+		var frame = Frame.clone()
 		frame.color = color
 		frame.x = x
 		frame.y = y
@@ -187,7 +197,15 @@ Frame = function(method) {
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
 		return frame
-	
+	case 'label':
+		this.label = message[1]
+		return this	
+	case 'filter':
+		this.filter = message[1]
+		return this
+	case 'transform':
+		this.transform = message[1]
+		return this
 	default:
 		console.log(this  + "received unknown message " + message)
 		// ignore the message
