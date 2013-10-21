@@ -17,6 +17,7 @@ Frame = function(method) {
 		var outputs = this.outputs
 		var height = (Math.max(inputs.length,outputs.length) + 1) * 15
 		var width = 0	
+		Screen.font = '12px Arial'
 		for (var i = 0; i < inputs.length; ++i) width = Math.max(width, Screen.measureText(inputs[i].text).width * 2)
 		for (var i = 0; i < outputs.length; ++i) width = Math.max(width, Screen.measureText(outputs[i].text).width * 2)
 		width += 40 
@@ -64,12 +65,13 @@ Frame = function(method) {
 		Screen.closePath()
 		Screen.fillStyle = this.color;
 		Screen.fill()
-		Screen.strokeStyle = "black"
+		Screen.strokeStyle = Colors.Text.dark;
 		Screen.stroke()
 		Screen.restore()
 		Screen.save()
-		Screen.fillStyle = "black"
+		Screen.fillStyle = Colors.Text.dark;
 		Screen.fillText(this.label, x, y - 5)
+		Screen.fillStyle = Colors.Text.light;
 		if (this.transform)  {
 			Screen.fillText("\u27f6", x + width/2 - 6, y + height/2 + 2)
 		}
@@ -210,5 +212,3 @@ Frame = function(method) {
 	}
 	return this
 }
-
-
