@@ -9,7 +9,17 @@
 // Resends messages to all of the attached objects, allows a basic level of routing
 //
 Hub = function(method) {
-	var message = Array.prototype.slice.apply(arguments,[0])
+	var message = []
+	if (typeof(method) == 'object' && method.type == 'message') {
+		try {
+			message = JSON.parse(method.data)
+			method = message.shift()
+		} catch (e) {
+			console.log(e)
+		}
+	} else {
+		message = arguments.list()
+	}
 	switch (method) {
 	case 'subscribe':
 		var selector = message[1]
@@ -31,4 +41,10 @@ Hub = function(method) {
 		break
 	}
 }
+
+Hub.ws = new WebSocket('ws://' + document.location.hostname + ':8888/wot/docker-out/%23/ws' + Math.random() +  '/docker-in/ws')
+Hub.ws.addEventListener('message', Hub)
+Hub.ws.addEventListener('open', Hub)
+Hub.ws.addEventListener('close', Hub)
+Hub.ws.addEventListener('error', Hub)
 Hub.queues = {}
