@@ -37,6 +37,11 @@ Frame = function(method) {
 				this.outputs[i].x = x+width	// capture center
 				this.outputs[i].y = y+i*dy + dy	// of the output tab
 			}
+			// animate snap back if we're unattached
+			if (!this.dragging && !this.outputs[i].target && (this.outputs[i].tx != this.outputs[i].x || this.outputs[i].ty != this.outputs[i].y)) {
+				this.outputs[i].tx = this.outputs[i].x + Math.floor((this.outputs[i].tx - this.outputs[i].x)/2)
+				this.outputs[i].ty = this.outputs[i].y + Math.floor((this.outputs[i].ty - this.outputs[i].y)/2)
+			}
 			Screen.lineTo(this.outputs[i].x,this.outputs[i].y-5) // 5 == radius
 			var dx = this.outputs[i].y > this.outputs[i].ty ? 2.5 :  this.outputs[i].y < this.outputs[i].ty ? - 2.5 : 0
 			Screen.bezierCurveTo(
@@ -119,7 +124,9 @@ Frame = function(method) {
 		return this
 
 	case 'up':
-		if (this.dragging && this.dragging.target && ! this.dragging.target.target) this.dragging.target = false
+		if (this.dragging && this.dragging.target && ! this.dragging.target.target) {
+			this.dragging.target = false
+		} 
 		this.dragging = false
 		Hub('subscribe','down',this)	// watch for down events
 		Hub('unsubscribe','up',this)	
