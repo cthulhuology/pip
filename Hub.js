@@ -13,9 +13,9 @@ Hub = function(method) {
 	if (typeof(method) == 'object' && method.type == 'message') {
 		try {
 			message = JSON.parse(method.data)
-			method = message.shift()
+			method = message[0]
 		} catch (e) {
-			console.log(e)
+			console.error(e)
 		}
 	} else {
 		message = arguments.list()
@@ -36,15 +36,25 @@ Hub = function(method) {
 		break
 	default:										// publish by default
 		var selector = message[0]
-		if (typeof(Hub.queues[selector]) != "object") return;						// don't send to empty lists
-		for (var i = 0; i < Hub.queues[selector].length; ++i) Hub.queues[selector][i].resend(message)	// resend message to each
+		if (typeof(Hub.queues[selector]) == "object") 
+			for (var i = 0; i < Hub.queues[selector].length; ++i) Hub.queues[selector][i].resend(message)	// resend message to each
+		// proxy for websockets 
+		for (var i = 0; i < Hub.sockets.length; ++i) 
+			if (Hub.sockets[i].methods.indexOf(selector) >= 0)
+				Hub.sockets[i].send(JSON.stringify(message))
 		break
 	}
 }
 
-Hub.ws = new WebSocket('ws://' + document.location.hostname + ':8888/wot/docker-out/%23/ws' + Math.random() +  '/docker-in/ws')
-Hub.ws.addEventListener('message', Hub)
-Hub.ws.addEventListener('open', Hub)
-Hub.ws.addEventListener('close', Hub)
-Hub.ws.addEventListener('error', Hub)
+Hub.sockets = []
+Hub.attach = function(url, methods) {
+	var ws = new WebSocket(url)
+	ws.methods = methods
+	ws.addEventListener('message', Hub)
+	ws.addEventListener('open', Hub)
+	ws.addEventListener('close', Hub)
+	ws.addEventListener('error', Hub)
+	Hub.sockets.push(ws)
+}
 Hub.queues = {}
+
