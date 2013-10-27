@@ -24,15 +24,21 @@ Function.prototype.after = function(timeout) {
 }
 
 // Sends a message to the object when the condition holds true
-Function.prototype.when = function( condition ) {
+Function.prototype.when = function(condition) {
 	var self = this
-	console.log(self)
 	var message = arguments.list()
 	if (! condition.apply(self,[]) ) {
-		setTimeout( function() {  self.when.apply(self,message) }, 500 )
+		setTimeout( function() {  self.when.apply(self,message) }, 1000/60 )
 		return self
 	}
 	return self.resend(message.slice(1))
+}
+
+Function.prototype.whenever = function(condition) {
+	var self = this
+	var message = arguments.list()
+	if (condition.apply(self,[])) self.resend(message.slice(1))
+	setTimeout( function() { self.whenever.apply(self,message) }, 1000/60 )
 }
 
 Function.prototype.clone = function() {
