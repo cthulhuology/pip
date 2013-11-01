@@ -143,6 +143,16 @@ Screen.widgets = []		// an array of widgets on screen
 
 Screen.render = function() {
 	Screen('clearRect',0,0,Canvas.width,Canvas.height)
+		('save')
+		('beginPath')
+		('moveTo',0, -Canvas.height/2)
+		('lineTo',0,Canvas.height/2)
+		('moveTo',-Canvas.width/2,0)
+		('lineTo',Canvas.width/2,0)
+		('closePath')
+		('strokeStyle','black')
+		('stroke')
+		('restore')
 	for (var i = 0; i < Screen.widgets.length; ++i) 
 		try {
 			Screen.widgets[i]('draw')		// draw method

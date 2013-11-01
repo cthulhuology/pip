@@ -8,13 +8,13 @@
 Mouse = function(e) {
 	switch(e.type) {
 		case 'mousedown':
-			Message('down', e.clientX, e.clientY, e.button)
+			Message('down', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
 			break
 		case 'mousemove': 
-			Message('move', e.clientX, e.clientY)
+			Message('move', e.clientX + Screen.x, e.clientY + Screen.y)
 			break
 		case 'mouseup':
-			Message('up', e.clientX, e.clientY, e.button)
+			Message('up', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
 			break
 		case 'wheel':
 			Message('scroll', e.deltaX, e.deltaY)
