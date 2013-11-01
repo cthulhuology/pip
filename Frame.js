@@ -1,4 +1,10 @@
-// Frame.js
+
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
 // 
 // © 2012,2013 David J. Goehrig <dave@dloh.org>
 // 
