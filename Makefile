@@ -4,6 +4,7 @@ SCRIPTS = LICENSE Base.js Message.js Screen.js Mouse.js Colors.js Frame.js Compo
 
 pip.js : $(SCRIPTS)
 	cat $(SCRIPTS) > pip.js
+	cat pip.js > ~/node_modules/provisioner/lib/pip.js
 
 .PHONY: clean
 clean:

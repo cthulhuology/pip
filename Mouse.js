@@ -16,6 +16,12 @@ Mouse = function(e) {
 		case 'mouseup':
 			Message('up', e.clientX, e.clientY, e.button)
 			break
+		case 'wheel':
+			Message('scroll', e.deltaX, e.deltaY)
+			break
+		case 'mousewheel':
+			Message('scroll', -e.wheelDeltaX, -e.wheelDeltaY)
+			break
 		default:
 			// ignore this type of event
 	}
@@ -24,3 +30,5 @@ Mouse = function(e) {
 Canvas.addEventListener('mousedown',Mouse,false)
 Canvas.addEventListener('mousemove',Mouse,false)
 Canvas.addEventListener('mouseup',Mouse,false)
+Canvas.addEventListener('wheel',Mouse,false)
+Canvas.addEventListener('mousewheel',Mouse,false)

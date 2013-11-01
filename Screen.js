@@ -97,13 +97,17 @@ Screen = (function(method) {
 		var y = message[2]
 		var w = message[3]
 		var h = message[4]
-		screen.rect(x,y,w,h)
+		screen.rect(x - this.x,y - this.y,w,h)
 		return this
 	case 'restore':
 		screen.restore()
 		return this
 	case 'save':
 		screen.save()
+		return this
+	case 'scroll':
+		this.x += message[1]
+		this.y += message[2]
 		return this
 	case 'show':
 		var widget = message[1]
@@ -147,6 +151,8 @@ Screen.render = function() {
 		}
 	onFrame(Screen.render)
 }
+
+Screen.ack('scroll')
 
 window.onload = function() {
 	onFrame(Screen.render)
