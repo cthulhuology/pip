@@ -24,9 +24,9 @@ Frame = function(method) {
 		this.width = width
 		this.height = height
 		Screen('save')	
-		Screen('beginPath')
-		Screen('moveTo',x,y)
-		Screen('lineTo',x+width,y)
+			('beginPath')
+			('moveTo',x,y)
+			('lineTo',x+width,y)
 		for (var i = 0; i < outputs.length; ++i) {
 			var dy = height / (outputs.length + 1)
 			// Adjust positions if we moved
@@ -47,42 +47,36 @@ Frame = function(method) {
 			Screen('bezierCurveTo',
 				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y-5,
 				this.outputs[i].x - dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty-5,
-				this.outputs[i].tx,this.outputs[i].ty-5
-			)
-			Screen('arc',this.outputs[i].tx,this.outputs[i].ty, 5, -0.5 * Math.PI, 0.5 * Math.PI)
-			Screen('bezierCurveTo',
+				this.outputs[i].tx,this.outputs[i].ty-5)
+				('arc',this.outputs[i].tx,this.outputs[i].ty, 5, -0.5 * Math.PI, 0.5 * Math.PI)
+				('bezierCurveTo',
 				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].ty+5,
 				this.outputs[i].x + dx + (this.outputs[i].tx - this.outputs[i].x)/2, this.outputs[i].y+5,
-				this.outputs[i].x,this.outputs[i].y+5
-			)
+				this.outputs[i].x,this.outputs[i].y+5)
 		}
 		Screen('lineTo',x+width,y+height)
-		Screen('lineTo',x,y+height)
+			('lineTo',x,y+height)
 		for (var i = inputs.length; i > 0; ) {
 			--i;
 			var dy = height / (inputs.length + 1)
 			this.inputs[i].x = x
 			this.inputs[i].y = y+i*dy+dy
 			Screen('lineTo',x,y+i*dy +dy + 5)
-			Screen('arc',x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
+				('arc',x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
 		}
 		Screen('lineTo',x,y)
-		Screen('closePath')
-		Screen('fillStyle',this.color)
-		Screen('fill')
-		Screen('strokeStyle',Colors.Text.dark)
-		Screen('stroke')
-		Screen('restore')
-		Screen('save')
-		Screen('fillStyle',Colors.Text.dark)
-		Screen('fillText',this.label, x, y - 5)
-		Screen('fillStyle',Colors.Text.light)
-		if (this.transform)  {
-			Screen('fillText',"\u27f6", x + width/2 - 6, y + height/2 + 2)
-		}
-		if (this.filter)  {
-			Screen('fillText',"\ud835\ude27", x + width/2 - 3, y + height/2 + 3)
-		}
+			('closePath')
+			('fillStyle',this.color)
+			('fill')
+			('strokeStyle',Colors.Text.dark)
+			('stroke')
+			('restore')
+			('save')
+			('fillStyle',Colors.Text.dark)
+			('fillText',this.label, x, y - 5)
+			('fillStyle',Colors.Text.light)
+		if (this.transform) Screen('fillText',"\u27f6", x + width/2 - 6, y + height/2 + 2)
+		if (this.filter)  Screen('fillText',"\ud835\ude27", x + width/2 - 3, y + height/2 + 3)
 		for (var i = inputs.length; i > 0; ) {
 			--i;
 			var dy = height / (inputs.length + 1)
@@ -94,7 +88,6 @@ Frame = function(method) {
 			Screen('fillText',outputs[i].text, (x + width) - offset - 10,y+i*dy+dy+3)
 		}
 		Screen('restore')
-
 		this.drawing = false
 		return this
 
@@ -143,10 +136,10 @@ Frame = function(method) {
 							break;
 						}
 						Screen('save')
-						Screen('strokeStyle',"red")
-						Screen('circle',Frame.instances[i].inputs[j].x,Frame.instances[i].inputs[j],15)
-						Screen('stroke')
-						Screen('restore')
+							('strokeStyle',"red")
+							('circle',Frame.instances[i].inputs[j].x,Frame.instances[i].inputs[j],15)
+							('stroke')
+							('restore')
 						this.dragging.tx = Frame.instances[i].inputs[j].x
 						this.dragging.ty = Frame.instances[i].inputs[j].y
 						Frame.instances[i].inputs[j].target = this.dragging
@@ -165,14 +158,13 @@ Frame = function(method) {
 			if (this.inputs[i].target) {
 				this.inputs[i].target.tx = x - this.dx
 				this.inputs[i].target.ty = y - this.dy + dy*i + dy
-
 			}
 		}
 		return this
 
 	case 'show':
 		Screen('show',this)
-		this.ack('down',this)
+		this.ack('down')
 		return this
 	
 	case 'hide':
