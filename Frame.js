@@ -161,16 +161,6 @@ Frame = function(method) {
 			}
 		}
 		return this
-
-	case 'show':
-		Screen('show',this)
-		this.ack('down')
-		return this
-	
-	case 'hide':
-		Screen('hide',this)
-		return this
-
 	case 'new':
 		var color = message[1]
 		var x = message[2]
@@ -199,8 +189,7 @@ Frame = function(method) {
 		this.transform = message[1]
 		return this
 	default:
-		console.log(this  + "received unknown message " + message)
-		// ignore the message
+		Widget.apply(this,message)
 	}
 	return this
 }
