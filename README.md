@@ -1,9 +1,9 @@
-flow
-====
+pip
+===
 
 A Visual Data Flow Programming Framework
 
-For more information see http://cthulhuology.github.io/flow
+For more information see http://cthulhuology.github.io/pip
 
 
 LICENSE
