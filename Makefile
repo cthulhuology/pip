@@ -1,7 +1,10 @@
-all : flow.js
+all : pip.js
 
-SCRIPTS = LICENSE Base.js Hub.js Screen.js Mouse.js Colors.js Frame.js Components.js
+SCRIPTS = LICENSE Base.js Message.js Screen.js Mouse.js Colors.js Frame.js Components.js
 
-flow.js : $(SCRIPTS)
-	cat $(SCRIPTS) > flow.js
+pip.js : $(SCRIPTS)
+	cat $(SCRIPTS) > pip.js
 
+.PHONY: clean
+clean:
+	rm pip.js

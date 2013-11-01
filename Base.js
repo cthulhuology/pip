@@ -42,10 +42,6 @@ Function.prototype.whenever = function(condition) {
 }
 
 Function.prototype.clone = function() {
-	var src = this.toString()
-	var definition = src.substr(0,src.indexOf("{")).match(/\(([^)]+)\)/)[1].split(/,\s*/)
-	definition.push(src.substr(1+src.indexOf("{"), src.lastIndexOf("}")-src.indexOf("{")-1))
-	return Function.prototype.constructor.apply(this, definition)
+	var proto = this
+	return function() { return proto.apply(arguments.callee, arguments.list()) }
 }
-
-

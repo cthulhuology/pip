@@ -8,13 +8,13 @@
 Mouse = function(e) {
 	switch(e.type) {
 		case 'mousedown':
-			Hub('down', e.clientX, e.clientY, e.button)
+			Message('down', e.clientX, e.clientY, e.button)
 			break
 		case 'mousemove': 
-			Hub('move', e.clientX, e.clientY)
+			Message('move', e.clientX, e.clientY)
 			break
 		case 'mouseup':
-			Hub('up', e.clientX, e.clientY, e.button)
+			Message('up', e.clientX, e.clientY, e.button)
 			break
 		default:
 			// ignore this type of event
