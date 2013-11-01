@@ -9,3 +9,8 @@ pip.js : $(SCRIPTS)
 .PHONY: clean
 clean:
 	rm pip.js
+
+.PHONY: dist
+dist:
+	git commit -a
+	git push origin master
