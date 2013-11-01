@@ -360,7 +360,6 @@ Colors = {
 Widget = function(method) {
 	var message = arguments.list()
 	switch(method) {
-	
 	case 'at':
 		this.x = message[1]
 		this.y = message[2]
@@ -377,7 +376,6 @@ Widget = function(method) {
 		this.dy = y - this.y
 		this.ack('up','move').nack('down')
 		return this
-return this
 	case 'move':
 		this.x = message[1] - this.dx
 		this.y = message[2] - this.dy
