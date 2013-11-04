@@ -6,6 +6,10 @@
 Widget = function(method) {
 	var message = arguments.list()
 	switch(method) {
+	case 'has':
+		for (var i = 1; i < message.length; i += 2)
+			this[message[i]] = message[i+1]
+		return this
 	case 'at':
 		this.x = message[1]
 		this.y = message[2]

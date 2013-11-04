@@ -25,7 +25,7 @@ Message = function(method) {
 		} 
 	// proxy for websockets 
 	for (var i = 0; i < Message.sockets.length; ++i) 
-		if (Message.sockets[i].methods.indexOf(selector) >= 0)
+		if (Message.sockets[i].methods.indexOf(selector) >= 0 || Message.sockets[i].methods.indexOf('*') >= 0)
 			Message.sockets[i].send(JSON.stringify(message))
 	return this
 }
@@ -35,6 +35,7 @@ Message.queues = {}
 
 Message.attach = function(url) {
 	var ws = new WebSocket(url)
+	ws.url = url
 	ws.methods = arguments.list().slice(1)
 	ws.addEventListener('message', Message)
 	ws.addEventListener('open', Message)
@@ -42,6 +43,15 @@ Message.attach = function(url) {
 	ws.addEventListener('error', Message)
 	Message.sockets.push(ws)
 	return this
+}
+
+Message.detach = function(url) {
+	for (var i = 0; i < Message.sockets.length; ++i) {
+		if (Message.sockets[i].url == url) {
+			Message.sockets[i].close()
+			Message.sockets.splice(i,1)	// remove the socket from the list
+		}
+	}
 }
 
 Function.prototype.ack = function() {
