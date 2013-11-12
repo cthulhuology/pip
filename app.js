@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 https = require('https')
 WebSocket = require('ws')
 express = require('express')
@@ -13,6 +15,9 @@ app.use(express.static(__dirname + "/"))
 
 server = new WebSocket.Server({ port: 6602 })
 console.log("got server " + server)
+
+var sockets = []
+
 server.on('connection', function(socket) {
 	console.log("session " + socket.upgradeReq.url + " started")
 	var payload = ''
@@ -38,6 +43,7 @@ server.on('connection', function(socket) {
 		response.on('end', function() {
 			var msg = JSON.parse(payload)
 			socket.send(JSON.stringify(["auth", msg.email, msg.expires, msg.issuer, msg.status ]))
+			sockets.push(socket)
 		})
 
 	})
@@ -52,12 +58,22 @@ server.on('connection', function(socket) {
 		console.log("got message " + message)
 		try {
 			var msg = JSON.parse(message)
+			if (msg[0] == "announce") {
+				console.log("peer announcement")
+				for (var i = 0; i < sockets.length; ++i) {
+					if ( sockets[i] != socket) {
+						console.log("sending", ["peer", msg[1],msg[2]])
+						 sockets[i].send(JSON.stringify(["peer", msg[1],msg[2]]))
+					}
+				}
+			}
 		} catch(e) {
 			console.log("Message error " + e + " on message " + message)
 		}
 	})
 	socket.on('close', function() {
 		console.log("session " + socket.upgradeReq.url + " closed")
+		if (sockets.indexOf(socket) >= 0) sockets.slice(sockets.indexOf(socket),1)
 	})
 })
 
