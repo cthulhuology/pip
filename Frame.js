@@ -92,6 +92,7 @@ Frame = function(method) {
 		return this
 
 	case 'down':
+		console.log('down')
 		var x = message[1]
 		var y = message[2]
 		for (var i = 0; i < this.outputs.length; ++i) {
@@ -178,6 +179,7 @@ Frame = function(method) {
 		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
+		frame.ack('down')
 		return frame
 	case 'label':
 		this.label = message[1]
