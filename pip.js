@@ -28,21 +28,27 @@ Object.prototype.list = function() {
 	return Array.prototype.slice.apply(this,[0])
 }
 
+Object.prototype.keys = function() {
+	var keys = []
+	for (x in this) if (this.hasOwnProperty(x)) keys.push(x)
+	return keys
+}
+
 // We need to do this because invoking a function in a top level passes window as this
-Function.prototype.send = function() {
-	return this.apply(this,arguments.list())
+Function.prototype.send = function(message) {
+	return this.apply(this,message)
 }
 
 // Send a list of arguments to a function to evaluate itself with
-Function.prototype.resend = function(message) {
-	return this.apply(this,message)
+Function.prototype.resend = function(proto,message) {
+	return proto.apply(this,message)
 }
 
 // Sends a message to the object after a given timeout
 Function.prototype.after = function(timeout) {
 	var message = arguments.list().slice(1)
 	var self = this
-	setTimeout( function() { self.resend(message) }, timeout )
+	setTimeout( function() { self.send(message) }, timeout )
 }
 
 // Sends a message to the object when the condition holds true
@@ -53,19 +59,62 @@ Function.prototype.when = function(condition) {
 		setTimeout( function() {  self.when.apply(self,message) }, 1000/60 )
 		return self
 	}
-	return self.resend(message.slice(1))
+	return self.send(message.slice(1))
 }
 
 Function.prototype.whenever = function(condition) {
 	var self = this
 	var message = arguments.list()
-	if (condition.apply(self,[])) self.resend(message.slice(1))
+	if (condition.apply(self,[])) self.send(message.slice(1))
 	setTimeout( function() { self.whenever.apply(self,message) }, 1000/60 )
 }
 
 Function.prototype.clone = function() {
 	var proto = this
 	return function() { return proto.apply(arguments.callee, arguments.list()) }
+}
+
+String.prototype.post = function(D,F) {
+	var R = XMLHttpRequest ? new XMLHttpRequest(): _doc.createRequest()
+	R.onreadystatechange = function () {
+		if (this.readyState != 4 || typeof(F) != "function") return false
+		if (this.status == 404) F(null)
+		if (this.status == 200) F(this.responseText)
+	}
+	R.open('POST',this,true)
+	R.setRequestHeader('Content-Type','application/json')
+	R.send(D ? D : '')
+	return this
+}
+
+String.prototype.get = function(F) {
+	var R = XMLHttpRequest ? new XMLHttpRequest(): _doc.createRequest()
+	R.onreadystatechange = function () {
+		if (this.readyState != 4 || typeof(F) != "function") return false
+		if (this.status == 404) F(null)
+		if (this.status == 200) {
+			console.log(this)
+			try {
+				if (this.responseXML) return F(this.responseXML)
+				else if (JSON.parse(this.responseText)) return F(JSON.parse(this.responseText))
+			} catch(e) {		
+				F(this.responseText)
+			}
+		}
+	}
+	R.open("GET",this,true)
+	R.send()
+	return this
+}
+
+String.prototype.connect = function(F) {
+	var ws = new WebSocket(this)
+	ws.url = this
+	ws.addEventListener('message',F)
+	ws.addEventListener('open',F)
+	ws.addEventListener('close',F)
+	ws.addEventListener('error',F)
+	return ws
 }
 // Message.js
 //
@@ -88,13 +137,13 @@ Message = function(method) {
 	var selector = message[0]
 	if (typeof(Message.queues[selector]) == "object") 
 		for (var i = 0; i < Message.queues[selector].length; ++i) try {
-			 Message.queues[selector][i].resend(message)	// resend message to each
+			 Message.queues[selector][i].send(message)	// send message to each
 		} catch (e) {
 			console.log(e)
 		} 
 	// proxy for websockets 
 	for (var i = 0; i < Message.sockets.length; ++i) 
-		if (Message.sockets[i].methods.indexOf(selector) >= 0)
+		if (Message.sockets[i].methods.indexOf(selector) >= 0 || Message.sockets[i].methods.indexOf('*') >= 0)
 			Message.sockets[i].send(JSON.stringify(message))
 	return this
 }
@@ -103,14 +152,19 @@ Message.sockets = []
 Message.queues = {}
 
 Message.attach = function(url) {
-	var ws = new WebSocket(url)
+	var ws = url.connect(Message)
 	ws.methods = arguments.list().slice(1)
-	ws.addEventListener('message', Message)
-	ws.addEventListener('open', Message)
-	ws.addEventListener('close', Message)
-	ws.addEventListener('error', Message)
 	Message.sockets.push(ws)
 	return this
+}
+
+Message.detach = function(url) {
+	for (var i = 0; i < Message.sockets.length; ++i) {
+		if (Message.sockets[i].url == url) {
+			Message.sockets[i].close()
+			Message.sockets.splice(i,1)	// remove the socket from the list
+		}
+	}
 }
 
 Function.prototype.ack = function() {
@@ -278,21 +332,11 @@ Screen.widgets = []		// an array of widgets on screen
 
 Screen.render = function() {
 	Screen('clearRect',0,0,Canvas.width,Canvas.height)
-		('save')
-		('beginPath')
-		('moveTo',0, -Canvas.height/2)
-		('lineTo',0,Canvas.height/2)
-		('moveTo',-Canvas.width/2,0)
-		('lineTo',Canvas.width/2,0)
-		('closePath')
-		('strokeStyle','black')
-		('stroke')
-		('restore')
 	for (var i = 0; i < Screen.widgets.length; ++i) 
 		try {
 			Screen.widgets[i]('draw')		// draw method
 		} catch (e) {
-			console.log('failed to draw widget ' + i)
+			console.log('failed to draw widget ' + i, e)
 		}
 	onFrame(Screen.render)
 }
@@ -417,6 +461,7 @@ Widget = function(method) {
 
 Frame = function(method) {
 	var message = arguments.list()
+	var self = this
 	switch(method) {
 	case 'draw':
 		if (this.drawing) return;
@@ -502,6 +547,7 @@ Frame = function(method) {
 		return this
 
 	case 'down':
+		console.log('down')
 		var x = message[1]
 		var y = message[2]
 		for (var i = 0; i < this.outputs.length; ++i) {
@@ -588,6 +634,7 @@ Frame = function(method) {
 		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
+		frame.ack('down')
 		return frame
 	case 'label':
 		this.label = message[1]
@@ -599,7 +646,7 @@ Frame = function(method) {
 		this.transform = message[1]
 		return this
 	default:
-		Widget.apply(this,message)
+		this.resend(Widget,message)
 	}
 	return this
 }
@@ -670,3 +717,188 @@ MISO = function(x,y,m) {
 	return MIMO(x||100,y||100,m||0,1, Colors.orange)("label","MISO")
 }
 
+// Button.js
+//
+// © 2013 David J. Goehrig <dave@dloh.org>
+//
+
+Button = function(method) {
+	var self = this
+	var message = arguments.list()	
+	switch(method) {
+	case 'new':
+		var self = Button.clone()
+		self.action = function() { console.log("Pressed") }
+		self.label = message[1]
+		self.x = message[2]
+		self.y = message[3]	
+		self.width = message[4]
+		self.height = message[5]
+		self.ack('down')
+		return self
+	case 'label':
+		self.label = message[1]
+		return self
+	case 'action':
+		self.action = message[1]
+		return self
+	case 'down':
+		var x = message[1]
+		var y = message[2]
+		if (x < self.x || x > self.x + self.width || y < self.y || y > self.y + self.height) return self
+		console.log('down')
+		self.action()		
+		return self
+	case 'draw':
+		Screen('save')
+			('font','32px Arial')
+		var dx = (self.width - Screen('measureText',self.label))/2
+		var dy = (self.height - 32)/2 + 24 
+		Screen('beginPath')
+			('rect',self.x,self.y,self.width,self.height)
+			('closePath')
+			('stroke')
+			('fillText',self.label, self.x + dx, self.y+dy)
+		('restore')
+		return self
+	default:
+		return self.resend(Widget,message)
+	}
+}
+// Console.js
+//
+// © 2013 David J. Goehrig <dave@dloh.org>
+//
+
+Console = function(method) {
+	var message = arguments.list()
+	var self = this
+	switch (method) {
+	case 'new':
+		var self = Console.clone()
+		var x = message[1]
+		var y = message[2]
+		var w = message[3]
+		var h = message[4]
+		self.x = x || 10
+		self.y = y || 10
+		self.width = w || 20 * 40
+		self.height = h || 20 * 25
+		self.lines = []
+		return self	
+	case 'draw':
+		Screen('save')
+			('font', '16px Lucida Console')
+			('beginPath')
+			('strokeStyle','black')
+			('rect',self.x,self.y,self.width,self.height)
+			('closePath')
+			('stroke')
+		for (var i = 0; i < self.lines.length; ++i)
+			Screen('fillText',self.lines[i], self.x+6, self.y + 26 + i * 20)
+		Screen('restore')
+		return self
+	case 'add':
+		self.lines.push(message[1])
+		while( self.lines.length > 24) self.lines.shift()
+	default:
+		return self.resend(Widget,message);
+	}
+}
+
+
+// Graph.js
+//
+// © 2013 David J. Goehrig
+//
+
+Graph = function(method) {
+	var self = this
+	var message = arguments.list()
+	switch(method) {
+	case 'new':
+		var self = Graph.clone()
+		self.color = message[1]	
+		self.x = message[2]
+		self.y = message[3]
+		self.width = message[4]
+		self.height = message[5]
+		self.points = []
+		return self
+	case 'add':
+		self.points.push(message[1])
+		while (self.points.length > 20) self.points.shift()
+		return self
+	case 'data':
+		self.points = message[1]
+		return self
+	case 'draw':
+		if (self.points.length == 0) return self;
+		var min = self.points[0]
+		var max = self.points[0]
+		Screen('save')
+			('beginPath')
+			('rect',self.x,self.y,self.width,self.height)
+			('stroke')
+			('closePath')
+			('restore')
+		for (var i = 0; i < self.points.length; ++i) {
+			min = self.points[i] < min ? self.points[i] : min
+			max = self.points[i] > max ? self.points[i] : max
+		}
+		var dx = self.width / (self.points.length -1)
+		var dy = 1
+		Screen('save')
+			('strokeStyle',self.color)
+			('fillStyle',self.color)
+			('beginPath')
+			('moveTo',self.x, self.y + self.height  - (self.points[0])*dy)
+		for (var i = 1; i < self.points.length; ++i) 
+			Screen('lineTo', self.x + dx*i, self.y + self.height - (self.points[i])*dy)
+		Screen('stroke')('closePath')('restore')
+		return self
+	default:
+		return self.resend(Widget,message)
+	}
+}
+// Tree.js
+//
+// © 2013 David J. Goehrig
+//
+
+Tree = function(method) {
+	var self = this
+	var message = arguments.list()
+	switch(method) {
+	case 'new':
+		var self = Tree.clone()
+		self.x = message[1]
+		self.y = message[2]
+		self.width = message[3]
+		self.height = message[4]
+		self.label = ''
+		self.data = {}	
+		return self	
+	case 'root':
+		self.label = message[1]
+		return self
+	case 'data':
+		self.data = message[1]
+		return self
+	case 'set':
+		self.data[message[1]]  = message[2]
+		return self
+	case 'draw':
+		Screen('save')
+			('font','16px Arial')
+			('fillText', self.label, self.x+20, self.y+20)
+			var keys = self.data.keys() 
+			for (var i = 0; i < keys.length; ++i)
+				Screen('fillText', "+ " + keys[i], self.x+80, self.y + 30 * i + 50)
+				('fillText', self.data[keys[i]], self.x+200, self.y + 30 * i + 50)
+		Screen('restore')
+		return self
+	default:
+		return self.resend(Widget,message)
+	}
+}

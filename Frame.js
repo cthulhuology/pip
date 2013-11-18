@@ -7,6 +7,7 @@
 
 Frame = function(method) {
 	var message = arguments.list()
+	var self = this
 	switch(method) {
 	case 'draw':
 		if (this.drawing) return;
@@ -191,7 +192,7 @@ Frame = function(method) {
 		this.transform = message[1]
 		return this
 	default:
-		Widget.apply(this,message)
+		this.resend(Widget,message)
 	}
 	return this
 }

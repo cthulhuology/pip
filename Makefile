@@ -1,6 +1,6 @@
 all : pip.js
 
-SCRIPTS = LICENSE Base.js Message.js Screen.js Mouse.js Colors.js Widget.js Frame.js Components.js 
+SCRIPTS = LICENSE Base.js Message.js Screen.js Mouse.js Colors.js Widget.js Frame.js Components.js Button.js Console.js Graph.js Tree.js  
 
 pip.js : $(SCRIPTS)
 	cat $(SCRIPTS) > pip.js

@@ -19,7 +19,7 @@ Message = function(method) {
 	var selector = message[0]
 	if (typeof(Message.queues[selector]) == "object") 
 		for (var i = 0; i < Message.queues[selector].length; ++i) try {
-			 Message.queues[selector][i].resend(message)	// resend message to each
+			 Message.queues[selector][i].send(message)	// send message to each
 		} catch (e) {
 			console.log(e)
 		} 
@@ -34,13 +34,8 @@ Message.sockets = []
 Message.queues = {}
 
 Message.attach = function(url) {
-	var ws = new WebSocket(url)
-	ws.url = url
+	var ws = url.connect(Message)
 	ws.methods = arguments.list().slice(1)
-	ws.addEventListener('message', Message)
-	ws.addEventListener('open', Message)
-	ws.addEventListener('close', Message)
-	ws.addEventListener('error', Message)
 	Message.sockets.push(ws)
 	return this
 }
