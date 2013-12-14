@@ -18,10 +18,11 @@ Console = function(method) {
 		self.width = w || 20 * 40
 		self.height = h || 20 * 25
 		self.lines = []
+		self.ack('down')
 		return self	
 	case 'draw':
 		Screen('save')
-			('font', '16px Lucida Console')
+			('font', '16px Monaco')
 			('beginPath')
 			('strokeStyle','black')
 			('rect',self.x,self.y,self.width,self.height)

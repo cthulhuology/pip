@@ -128,6 +128,7 @@ Message = function(method) {
 		try {
 			message = JSON.parse(method.data)
 			method = message[0]
+			console.log(method)
 		} catch (e) {
 			console.error(e)
 		}
@@ -354,9 +355,19 @@ window.onload = function() {
 // 
 
 Mouse = function(e) {
+	e.preventDefault()
+	e.cancelBubble = true;
 	switch(e.type) {
+		case 'contextmenu':
+			console.log(e)
 		case 'mousedown':
 			Message('down', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
+			var now = new Date();
+			if (now - Mouse.last < 300) {
+				console.log("doubleclick event detected")	
+				Message('doubleclick', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
+			}
+			Mouse.last = now
 			break
 		case 'mousemove': 
 			Message('move', e.clientX + Screen.x, e.clientY + Screen.y)
@@ -373,13 +384,15 @@ Mouse = function(e) {
 		default:
 			// ignore this type of event
 	}
+	return true;
 }
 
-Canvas.addEventListener('mousedown',Mouse,false)
-Canvas.addEventListener('mousemove',Mouse,false)
-Canvas.addEventListener('mouseup',Mouse,false)
-Canvas.addEventListener('wheel',Mouse,false)
-Canvas.addEventListener('mousewheel',Mouse,false)
+window.addEventListener('mousedown',Mouse,true)
+window.addEventListener('mousemove',Mouse,true)
+window.addEventListener('mouseup',Mouse,true)
+window.addEventListener('wheel',Mouse,true)
+window.addEventListener('mousewheel',Mouse,true)
+window.addEventListener('contextmenu',Mouse,true)
 Colors = {
 	Text : {
 		light : '#f0f1e2',
@@ -452,6 +465,49 @@ Widget = function(method) {
 		return this
 	}	
 }
+// Console.js
+//
+// © 2013 David J. Goehrig <dave@dloh.org>
+//
+
+Console = function(method) {
+	var message = arguments.list()
+	var self = this
+	switch (method) {
+	case 'new':
+		var self = Console.clone()
+		var x = message[1]
+		var y = message[2]
+		var w = message[3]
+		var h = message[4]
+		self.x = x || 10
+		self.y = y || 10
+		self.width = w || 20 * 40
+		self.height = h || 20 * 25
+		self.lines = []
+		self.ack('down')
+		return self	
+	case 'draw':
+		Screen('save')
+			('font', '16px Monaco')
+			('beginPath')
+			('strokeStyle','black')
+			('rect',self.x,self.y,self.width,self.height)
+			('closePath')
+			('stroke')
+		for (var i = 0; i < self.lines.length; ++i)
+			Screen('fillText',self.lines[i], self.x+6, self.y + 26 + i * 20)
+		Screen('restore')
+		return self
+	case 'add':
+		self.lines.push(message[1])
+		while( self.lines.length > 24) self.lines.shift()
+	default:
+		return self.resend(Widget,message);
+	}
+}
+
+
 // Frame.js
 // 
 // © 2012,2013 David J. Goehrig <dave@dloh.org>
@@ -516,6 +572,7 @@ Frame = function(method) {
 			var dy = height / (inputs.length + 1)
 			this.inputs[i].x = x
 			this.inputs[i].y = y+i*dy+dy
+			this.inputs[i].owner = this
 			Screen('lineTo',x,y+i*dy +dy + 5)
 				('arc',x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
 		}
@@ -545,7 +602,16 @@ Frame = function(method) {
 		Screen('restore')
 		this.drawing = false
 		return this
-
+	case 'doubleclick':
+		console.log('double click event')
+		var x = message[1]
+		var y = message[2]
+		if (x < this.x || x > this.x + this.width || y < this.y || y > this.y + this.height) return;
+		if (this.action) {
+			console.log("performing special action")
+			this.action()
+		}
+		return this
 	case 'down':
 		console.log('down')
 		var x = message[1]
@@ -634,7 +700,7 @@ Frame = function(method) {
 		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
-		frame.ack('down')
+		frame.ack('down','doubleclick')
 		return frame
 	case 'label':
 		this.label = message[1]
@@ -661,6 +727,28 @@ Producer = function(x,y,label,output) {
 		("show")
 }
 
+StartButton = function(x,y) {
+	var button =  Producer(x,y,'StartButton','start')
+	button.action = (function(button) { 
+		return function() {
+			console.log('sending message to ', button.outputs[0].target.owner)
+			Message('start',button.outputs[0].target.owner)
+		}
+	})(button)
+	return button;
+}
+
+StopButton = function(x,y) {
+	var button = Producer(x,y,'StopButton','stop')
+	button.action = (function(button) { 
+		return function() {
+			console.log('sending message to ', button.outputs[0].target.owner)
+			Message('stop',button.outputs[0].target.owner)
+		}
+	})(button)
+	return button
+}
+
 Pipe = function(x,y,label,input,output) {
 	return Frame("new",Colors.green.light,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Pipe")
@@ -668,30 +756,75 @@ Pipe = function(x,y,label,input,output) {
 }
 
 Consumer = function(x,y,label,input) {
-	return Frame("new",Colors.red,x||100,y||100,[input||"in"],[])
+	var consumer = Frame("new",Colors.red,x||100,y||100,[input||"in"],[])
 		("label",label || "Consumer")
 		("show")
+	consumer.console = Console('new',x||100,y||100,20*40,20*25)('show')
+	console.log("made console",consumer.console)
+	consumer.console.action = function(_x,_y,o) { 
+		console.log(o);
+		for (var i = 0; i < o.ccTextTimestamps.length; ++i) 
+			consumer.console('add',o.ccTextTimestamps[i][1].substr(0,80)); 
+
+	}
+	consumer.console.action.ack('debug')
+	return consumer
 }
 
 Filter = function(x,y,label,input,output,fun) {
 	return Frame("new",Colors.green.dark,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Filter")
-		("filter",fun.toString())
+		("filter",fun ? fun.toString() : (function(m) { return m }).toString() )
 		("show")
 }
 
 Transformer = function(x,y,label,input,output,fun) {
 	return Frame("new",Colors.green.dark,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Transformer")
-		("transform",fun.toString())
+		("transform", fun ? fun.toString() : (function(m) { return m }).toString())
 		("show")
 }
 
 Twitter = function(x,y) {
-	return Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["tweets"])
+	var twitter =  Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["tweets"])
 		("label","Twitter")
 		("show")	
+	twitter.start = function(_m,o) {
+		console.log(_m,o,twitter)
+		if (o != twitter) return;
+		console.log("Twitter got start", o)
+	}
+	twitter.stop = function(_m,o) {
+		console.log(_m,o,twitter)
+		if (o != twitter) return;
+		console.log("Twitter got stop", o)
+	}
+	twitter.start.ack('start')
+	twitter.stop.ack('stop')
 }
+
+Broadcast = function(x,y) {
+	var broadcast = Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["cctext"])
+		("label","Broadcast")
+		("show")	
+	broadcast.start =  function(_m,o) {
+		console.log(_m,o,broadcast)
+		if (o != broadcast) return;
+		var id = Math.random()
+		broadcast.url = 'ws://localhost:6719/wot.io/cctext/cctext.1202/pip.' + id + '/pip-out/pip'
+		console.log("Broadcast got start message for ", broadcast.url);
+		Message.attach(broadcast.url)
+	}
+	broadcast.stop = function(_m,o) {
+		console.log(_m,o,broadcast)
+		if (o != broadcast) return;
+		console.log("Broadcast got stop message for ", broadcast.url);
+		Message.detach(broadcast.url)
+	}
+	broadcast.start.ack('start')
+	broadcast.stop.ack('stop')
+}
+
 
 RSS = function(x,y) {
 	return Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["rss"])
@@ -717,6 +850,21 @@ MISO = function(x,y,m) {
 	return MIMO(x||100,y||100,m||0,1, Colors.orange)("label","MISO")
 }
 
+Components = [ 
+	StartButton,
+	StopButton,
+	Producer,
+	Pipe,
+	Consumer,
+	Filter,
+	Transformer,
+	Broadcast,
+	Twitter,
+	RSS,
+	MIMO,
+	SIMO,
+	MISO
+]
 // Button.js
 //
 // © 2013 David J. Goehrig <dave@dloh.org>
@@ -765,48 +913,6 @@ Button = function(method) {
 		return self.resend(Widget,message)
 	}
 }
-// Console.js
-//
-// © 2013 David J. Goehrig <dave@dloh.org>
-//
-
-Console = function(method) {
-	var message = arguments.list()
-	var self = this
-	switch (method) {
-	case 'new':
-		var self = Console.clone()
-		var x = message[1]
-		var y = message[2]
-		var w = message[3]
-		var h = message[4]
-		self.x = x || 10
-		self.y = y || 10
-		self.width = w || 20 * 40
-		self.height = h || 20 * 25
-		self.lines = []
-		return self	
-	case 'draw':
-		Screen('save')
-			('font', '16px Lucida Console')
-			('beginPath')
-			('strokeStyle','black')
-			('rect',self.x,self.y,self.width,self.height)
-			('closePath')
-			('stroke')
-		for (var i = 0; i < self.lines.length; ++i)
-			Screen('fillText',self.lines[i], self.x+6, self.y + 26 + i * 20)
-		Screen('restore')
-		return self
-	case 'add':
-		self.lines.push(message[1])
-		while( self.lines.length > 24) self.lines.shift()
-	default:
-		return self.resend(Widget,message);
-	}
-}
-
-
 // Graph.js
 //
 // © 2013 David J. Goehrig
@@ -896,6 +1002,80 @@ Tree = function(method) {
 			for (var i = 0; i < keys.length; ++i)
 				Screen('fillText', "+ " + keys[i], self.x+80, self.y + 30 * i + 50)
 				('fillText', self.data[keys[i]], self.x+200, self.y + 30 * i + 50)
+		Screen('restore')
+		return self
+	default:
+		return self.resend(Widget,message)
+	}
+}
+// Menu.js
+//
+// © 2013 David J. Goehrig <dave@dloh.org>
+//
+
+Menu = function(method) {
+	var self = this
+	var message = arguments.list()	
+	switch(method) {
+	case 'new':
+		var self = Menu.clone()
+		self.action = function() { console.log("Pressed") }
+		self.labels = message[1]
+		self.x = message[2]
+		self.y = message[3]	
+		self.width = 0
+		self.height = 0
+		self.ack('down')
+		return self
+	case 'labels':
+		self.labels = message[1]
+		return self
+	case 'action':
+		self.action = message[1]
+		return self
+	case 'down':
+		var b = message[3]
+		if (b != 2) return self;
+		this.x = message[1]
+		this.y = message[2]
+		self.ack('up','move').nack('down')
+		console.log('show menu')
+		self('show')
+		return self
+	case 'up':
+		var b = message[3]
+		if (b != 2) return self;
+		this.x = message[1]
+		this.y = message[2]
+		self.ack('down').nack('up','move')
+		console.log('menu create', this.selected,  this.labels[this.selected])
+		Components[this.selected](this.x,this.y)
+		self('hide')
+		return self
+	case 'move':
+		var x = message[1]
+		var y = message[2]
+		this.selected = Math.floor(Math.max(0,(Math.min(y - this.y, this.height) / 40))) % this.labels.length
+		console.log("selected ", this.selected)
+		return self
+	case 'draw':
+		Screen('save')
+			('font','20px Arial')
+		// calculate the maximum width of the menu items
+		self.height = self.labels.length * 40
+		for (var i = 0; i < self.labels.length; ++i) 
+			self.width = Math.max(Screen('measureText',self.labels[i])+40,self.width)	
+		
+		for (var i = 0; i < self.labels.length; ++i) {
+			var dx = (self.width - Screen('measureText',self.labels[i]))/2
+			Screen('beginPath')
+				('rect',self.x,self.y + i * 40,self.width,40)
+				('closePath')
+				('fillStyle', this.selected == i ? 'rgba(0,64,0,0.6)' : 'rgba(0,0,0,0.2)')
+				('fill')
+				('fillStyle', 'black')
+				('fillText',self.labels[i], self.x + dx, self.y+ i * 40 + 25)
+		}
 		Screen('restore')
 		return self
 	default:

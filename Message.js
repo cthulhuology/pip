@@ -10,6 +10,7 @@ Message = function(method) {
 		try {
 			message = JSON.parse(method.data)
 			method = message[0]
+			console.log(method)
 		} catch (e) {
 			console.error(e)
 		}

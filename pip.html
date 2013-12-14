@@ -10,19 +10,26 @@ canvas { margin: 0; padding: 0; width: 100%; height: 100%; top: 0; left: 0; posi
 </style>
 </head>
 <body>
-<canvas id="canvas" style="display: none"></canvas>
-<button id="signin" style="z-index: 10" onclick="Message('signin')">Sign In</button>
-<button id="signout" style="z-index: 10" onclick="Message('signout')">Sign Out</button>
+<canvas id="canvas" ></canvas>
 </body>
 </script>
-<script src="Base.js"></script>
-<script src="Message.js"></script>
-<script src="Screen.js"></script>
-<script src="Mouse.js"></script>
-<script src="Colors.js"></script>
-<script src="Widget.js"></script>
-<script src="Frame.js"></script>
-<script src="Components.js"></script>
-<script src="Persona.js"></script>
-<script src="RTC.js"></script>
+<script src="pip.js"></script>
+<script>
+m = Menu('new',[ 
+	'StartButton',
+	'StopButton',
+	'Producer',
+	'Pipe',
+	'Consumer',
+	'Filter',
+	'Transformer',
+	'Broadcast',
+	'Twitter',
+	'RSS',
+//	'MIMO',
+//	'SIMO',
+//	'MISO'
+], 0,0,0,0)
+
+</script>
 </html>

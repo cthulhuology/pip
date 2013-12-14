@@ -6,9 +6,19 @@
 // 
 
 Mouse = function(e) {
+	e.preventDefault()
+	e.cancelBubble = true;
 	switch(e.type) {
+		case 'contextmenu':
+			console.log(e)
 		case 'mousedown':
 			Message('down', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
+			var now = new Date();
+			if (now - Mouse.last < 300) {
+				console.log("doubleclick event detected")	
+				Message('doubleclick', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
+			}
+			Mouse.last = now
 			break
 		case 'mousemove': 
 			Message('move', e.clientX + Screen.x, e.clientY + Screen.y)
@@ -25,10 +35,12 @@ Mouse = function(e) {
 		default:
 			// ignore this type of event
 	}
+	return true;
 }
 
-Canvas.addEventListener('mousedown',Mouse,false)
-Canvas.addEventListener('mousemove',Mouse,false)
-Canvas.addEventListener('mouseup',Mouse,false)
-Canvas.addEventListener('wheel',Mouse,false)
-Canvas.addEventListener('mousewheel',Mouse,false)
+window.addEventListener('mousedown',Mouse,true)
+window.addEventListener('mousemove',Mouse,true)
+window.addEventListener('mouseup',Mouse,true)
+window.addEventListener('wheel',Mouse,true)
+window.addEventListener('mousewheel',Mouse,true)
+window.addEventListener('contextmenu',Mouse,true)

@@ -62,6 +62,7 @@ Frame = function(method) {
 			var dy = height / (inputs.length + 1)
 			this.inputs[i].x = x
 			this.inputs[i].y = y+i*dy+dy
+			this.inputs[i].owner = this
 			Screen('lineTo',x,y+i*dy +dy + 5)
 				('arc',x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
 		}
@@ -91,7 +92,16 @@ Frame = function(method) {
 		Screen('restore')
 		this.drawing = false
 		return this
-
+	case 'doubleclick':
+		console.log('double click event')
+		var x = message[1]
+		var y = message[2]
+		if (x < this.x || x > this.x + this.width || y < this.y || y > this.y + this.height) return;
+		if (this.action) {
+			console.log("performing special action")
+			this.action()
+		}
+		return this
 	case 'down':
 		console.log('down')
 		var x = message[1]
@@ -180,7 +190,7 @@ Frame = function(method) {
 		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
-		frame.ack('down')
+		frame.ack('down','doubleclick')
 		return frame
 	case 'label':
 		this.label = message[1]
