@@ -806,7 +806,7 @@ Twitter = function(x,y) {
 		console.log(_m,o,twitter)
 		if (o != twitter) return;
 		var id = Math.random()
-		twitter.url = 'ws://localhost:6718/wot.io/twitter-out/%23/pip.' + id + '/twitter-in/pip'
+		twitter.url = 'ws://bus03.wot.io:9001/wot.io/twitter-out/%23/pip.' + id + '/twitter-in/pip'
 		console.log("Twitter got start", o)
 		if (twitter.outputs[0].target.owner) {
 			Message('attach', twitter.outputs[0].target.owner, 'twitter')
@@ -832,7 +832,10 @@ Broadcast = function(x,y) {
 		console.log(_m,o,broadcast)
 		if (o != broadcast) return;
 		var id = Math.random()
-		broadcast.url = 'ws://localhost:6719/wot.io/cctext/cctext.1202/pip.' + id + '/pip-out/pip'
+		broadcast.url = 'ws://bus03.wot.io:9001/wot.io/cctext/%23/pip.' + id + '/pip-out/pip'
+		if (broadcast.outputs[0].target.owner) {
+			Message('attach', broadcast.outputs[0].target.owner, 'debug')
+		}
 		console.log("Broadcast got start message for ", broadcast.url);
 		Message.attach(broadcast.url)
 	}
