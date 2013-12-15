@@ -3,6 +3,9 @@
 // © 2013 David J. Goehrig
 //
 
+
+// session id
+
 Producer = function(x,y,label,output) {
 	return Frame("new",Colors.blue,x || 100,y || 100,[],[output || "out"])
 		("label",label || "Producer")
@@ -43,13 +46,23 @@ Consumer = function(x,y,label,input) {
 		("show")
 	consumer.console = Console('new',x||100,y||100,20*40,20*25)('show')
 	console.log("made console",consumer.console)
-	consumer.console.action = function(_x,_y,o) { 
-		console.log(o);
-		for (var i = 0; i < o.ccTextTimestamps.length; ++i) 
-			consumer.console('add',o.ccTextTimestamps[i][1].substr(0,80)); 
+	consumer.console.action = function(m,x,o) { 
+		console.log("Console action", arguments.list());
+		if (m == 'twitter') {
+			consumer.console('add', x.text.substr(0,80))
+		}
+		if (m == 'debug') {
+			for (var i = 0; i < o.ccTextTimestamps.length; ++i) 
+				consumer.console('add',o.ccTextTimestamps[i][1].substr(0,80)); 
+		}
 
 	}
-	consumer.console.action.ack('debug')
+	consumer.attach = function(_m,o,message) {
+		if (o != consumer) return;
+		console.log('Console listening for ', message)
+		consumer.console.action.ack(message)
+	}
+	consumer.attach.ack('attach')
 	return consumer
 }
 
@@ -74,12 +87,20 @@ Twitter = function(x,y) {
 	twitter.start = function(_m,o) {
 		console.log(_m,o,twitter)
 		if (o != twitter) return;
+		var id = Math.random()
+		twitter.url = 'ws://localhost:6718/wot.io/twitter-out/%23/pip.' + id + '/twitter-in/pip'
 		console.log("Twitter got start", o)
+		if (twitter.outputs[0].target.owner) {
+			Message('attach', twitter.outputs[0].target.owner, 'twitter')
+		}
+		Message.attach(twitter.url)
+		Message('connect','statuses/sample')
 	}
 	twitter.stop = function(_m,o) {
 		console.log(_m,o,twitter)
 		if (o != twitter) return;
 		console.log("Twitter got stop", o)
+		Message.detach(twitter.url)
 	}
 	twitter.start.ack('start')
 	twitter.stop.ack('stop')
@@ -135,13 +156,13 @@ MISO = function(x,y,m) {
 Components = [ 
 	StartButton,
 	StopButton,
-	Producer,
-	Pipe,
-	Consumer,
-	Filter,
-	Transformer,
 	Broadcast,
 	Twitter,
+	Consumer,
+	Producer,
+	Pipe,
+	Filter,
+	Transformer,
 	RSS,
 	MIMO,
 	SIMO,
