@@ -128,7 +128,6 @@ Message = function(method) {
 		try {
 			message = JSON.parse(method.data)
 			method = message[0]
-			console.log(method)
 		} catch (e) {
 			console.error(e)
 		}
@@ -337,7 +336,6 @@ Screen.render = function() {
 		try {
 			Screen.widgets[i]('draw')		// draw method
 		} catch (e) {
-			console.log('failed to draw widget ' + i, e)
 		}
 	onFrame(Screen.render)
 }
@@ -508,7 +506,13 @@ Console = function(method) {
 }
 
 
-// Frame.js
+
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
+// 
+// © 2012,2013 David J. Goehrig <dave@dloh.org>
 // 
 // © 2012,2013 David J. Goehrig <dave@dloh.org>
 // 
@@ -720,7 +724,6 @@ Frame = function(method) {
 //
 // © 2013 David J. Goehrig
 //
-
 
 // session id
 

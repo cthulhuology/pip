@@ -68,10 +68,7 @@ Frame = function(method) {
 			var dy = height / (inputs.length + 1)
 			this.inputs[i].x = x
 			this.inputs[i].y = y+i*dy+dy
-<<<<<<< HEAD
 			this.inputs[i].owner = this
-=======
->>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 			Screen('lineTo',x,y+i*dy +dy + 5)
 				('arc',x,y+i*dy +dy ,5,0.5 * Math.PI, -0.5 * Math.PI,true)	
 		}
@@ -182,19 +179,6 @@ Frame = function(method) {
 			}
 		}
 		return this
-<<<<<<< HEAD
-=======
-
-	case 'show':
-		Screen('show',this)
-		this.ack('down')
-		return this
-	
-	case 'hide':
-		Screen('hide',this)
-		return this
-
->>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 	case 'new':
 		var color = message[1]
 		var x = message[2]
@@ -212,10 +196,7 @@ Frame = function(method) {
 		for (var i = 0; i < outputs.length; ++i) frame.outputs.push({ text: outputs[i], x: 0, y: 0, tx: 0, ty: 0, target: false})
 		Frame.instances = Frame.instances ? Frame.instances : []
 		Frame.instances.push(frame)
-<<<<<<< HEAD
 		frame.ack('down','doubleclick')
-=======
->>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		return frame
 	case 'label':
 		this.label = message[1]
@@ -227,12 +208,7 @@ Frame = function(method) {
 		this.transform = message[1]
 		return this
 	default:
-<<<<<<< HEAD
 		this.resend(Widget,message)
-=======
-		console.log(this  + "received unknown message " + message)
-		// ignore the message
->>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 	}
 	return this
 }
