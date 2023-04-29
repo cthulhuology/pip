@@ -3,15 +3,19 @@
 // © 2013 David J. Goehrig
 //
 
+<<<<<<< HEAD
 
 // session id
 
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 Producer = function(x,y,label,output) {
 	return Frame("new",Colors.blue,x || 100,y || 100,[],[output || "out"])
 		("label",label || "Producer")
 		("show")
 }
 
+<<<<<<< HEAD
 StartButton = function(x,y) {
 	var button =  Producer(x,y,'StartButton','start')
 	button.action = (function(button) { 
@@ -34,6 +38,8 @@ StopButton = function(x,y) {
 	return button
 }
 
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 Pipe = function(x,y,label,input,output) {
 	return Frame("new",Colors.green.light,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Pipe")
@@ -41,6 +47,7 @@ Pipe = function(x,y,label,input,output) {
 }
 
 Consumer = function(x,y,label,input) {
+<<<<<<< HEAD
 	var consumer = Frame("new",Colors.red,x||100,y||100,[input||"in"],[])
 		("label",label || "Consumer")
 		("show")
@@ -64,23 +71,37 @@ Consumer = function(x,y,label,input) {
 	}
 	consumer.attach.ack('attach')
 	return consumer
+=======
+	return Frame("new",Colors.red,x||100,y||100,[input||"in"],[])
+		("label",label || "Consumer")
+		("show")
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 }
 
 Filter = function(x,y,label,input,output,fun) {
 	return Frame("new",Colors.green.dark,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Filter")
+<<<<<<< HEAD
 		("filter",fun ? fun.toString() : (function(m) { return m }).toString() )
+=======
+		("filter",fun.toString())
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		("show")
 }
 
 Transformer = function(x,y,label,input,output,fun) {
 	return Frame("new",Colors.green.dark,x||100,y||100,[input||"in"],[output||"out"])
 		("label",label || "Transformer")
+<<<<<<< HEAD
 		("transform", fun ? fun.toString() : (function(m) { return m }).toString())
+=======
+		("transform",fun.toString())
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		("show")
 }
 
 Twitter = function(x,y) {
+<<<<<<< HEAD
 	var twitter =  Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["tweets"])
 		("label","Twitter")
 		("show")	
@@ -132,6 +153,13 @@ Broadcast = function(x,y) {
 }
 
 
+=======
+	return Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["tweets"])
+		("label","Twitter")
+		("show")	
+}
+
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 RSS = function(x,y) {
 	return Frame("new",Colors.cyan,x||100,y||100,["start","stop"], ["rss"])
 		("label","RSS")
@@ -156,6 +184,7 @@ MISO = function(x,y,m) {
 	return MIMO(x||100,y||100,m||0,1, Colors.orange)("label","MISO")
 }
 
+<<<<<<< HEAD
 Components = [ 
 	StartButton,
 	StopButton,
@@ -171,3 +200,5 @@ Components = [
 	SIMO,
 	MISO
 ]
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725

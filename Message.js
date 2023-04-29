@@ -10,7 +10,10 @@ Message = function(method) {
 		try {
 			message = JSON.parse(method.data)
 			method = message[0]
+<<<<<<< HEAD
 			console.log(method)
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		} catch (e) {
 			console.error(e)
 		}
@@ -20,13 +23,21 @@ Message = function(method) {
 	var selector = message[0]
 	if (typeof(Message.queues[selector]) == "object") 
 		for (var i = 0; i < Message.queues[selector].length; ++i) try {
+<<<<<<< HEAD
 			 Message.queues[selector][i].send(message)	// send message to each
+=======
+			 Message.queues[selector][i].resend(message)	// resend message to each
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		} catch (e) {
 			console.log(e)
 		} 
 	// proxy for websockets 
 	for (var i = 0; i < Message.sockets.length; ++i) 
+<<<<<<< HEAD
 		if (Message.sockets[i].methods.indexOf(selector) >= 0 || Message.sockets[i].methods.indexOf('*') >= 0)
+=======
+		if (Message.sockets[i].methods.indexOf(selector) >= 0)
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 			Message.sockets[i].send(JSON.stringify(message))
 	return this
 }
@@ -35,12 +46,22 @@ Message.sockets = []
 Message.queues = {}
 
 Message.attach = function(url) {
+<<<<<<< HEAD
 	var ws = url.connect(Message)
 	ws.methods = arguments.list().slice(1)
+=======
+	var ws = new WebSocket(url)
+	ws.methods = arguments.list().slice(1)
+	ws.addEventListener('message', Message)
+	ws.addEventListener('open', Message)
+	ws.addEventListener('close', Message)
+	ws.addEventListener('error', Message)
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 	Message.sockets.push(ws)
 	return this
 }
 
+<<<<<<< HEAD
 Message.detach = function(url) {
 	for (var i = 0; i < Message.sockets.length; ++i) {
 		if (Message.sockets[i].url == url) {
@@ -50,6 +71,8 @@ Message.detach = function(url) {
 	}
 }
 
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 Function.prototype.ack = function() {
 	var methods = arguments.list()
 	for (var i = 0; i < methods.length; ++i) {

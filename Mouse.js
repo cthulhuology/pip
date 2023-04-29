@@ -12,6 +12,7 @@ Mouse = function(e) {
 		case 'contextmenu':
 			console.log(e)
 		case 'mousedown':
+<<<<<<< HEAD
 			Message('down', e.clientX + Screen.x, e.clientY + Screen.y, e.button)
 			var now = new Date();
 			if (now - Mouse.last < 300) {
@@ -31,6 +32,15 @@ Mouse = function(e) {
 			break
 		case 'mousewheel':
 			Message('scroll', -e.wheelDeltaX, -e.wheelDeltaY)
+=======
+			Message('down', e.clientX, e.clientY, e.button)
+			break
+		case 'mousemove': 
+			Message('move', e.clientX, e.clientY)
+			break
+		case 'mouseup':
+			Message('up', e.clientX, e.clientY, e.button)
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 			break
 		default:
 			// ignore this type of event

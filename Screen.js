@@ -97,7 +97,11 @@ Screen = (function(method) {
 		var y = message[2]
 		var w = message[3]
 		var h = message[4]
+<<<<<<< HEAD
 		screen.rect(x - this.x,y - this.y,w,h)
+=======
+		screen.rect(x,y,w,h)
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		return this
 	case 'restore':
 		screen.restore()
@@ -105,10 +109,13 @@ Screen = (function(method) {
 	case 'save':
 		screen.save()
 		return this
+<<<<<<< HEAD
 	case 'scroll':
 		this.x += message[1]
 		this.y += message[2]
 		return this
+=======
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 	case 'show':
 		var widget = message[1]
 		if (Screen.widgets.indexOf(widget) < 0) {
@@ -147,7 +154,11 @@ Screen.render = function() {
 		try {
 			Screen.widgets[i]('draw')		// draw method
 		} catch (e) {
+<<<<<<< HEAD
 			console.log('failed to draw widget ' + i, e)
+=======
+			console.log('failed to draw widget ' + i)
+>>>>>>> c9eb848e68893d9e807ee6b40fa21e3682a23725
 		}
 	onFrame(Screen.render)
 }
